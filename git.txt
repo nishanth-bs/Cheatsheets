@@ -1,0 +1,33 @@
+git init
+git log
+git log --graph --oneline
+git status
+git add hello.py
+git commit
+
+git diff
+git diff {commit1} {commmit2}
+git diff {commit1}
+git show {commitname}
+
+git branch
+git branch -a
+git branch {branchname}
+git checkout {branchname}
+git branch -d {branchname}
+
+git merge {branchname1} {branchname2}
+
+git remote
+git remote add {remotebranchname} {remotebranchURL}
+git remote -v
+git push {remotebranchname} {localbranchname}
+git fetch {remotebranchname/ branchname} |||| git log --oneline 
+
+git diff {remotebranchheadcommit} {localbranchheadcommit}
+
+pull - completely on github :) 
+
+alias 'subl = "/c/Program Files/Sublime Text 3/subl.exe" '
+
+hope this helps!
