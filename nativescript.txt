@@ -1,0 +1,512 @@
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "gr-login",
+  templateUrl: "login/login.component.html"
+})
+export class AppComponent {}
+
+<ActionBar title="Groceries"></ActionBar>
+<StackLayout>
+  <TextField hint="Email Address" keyboardType="email"
+    autocorrect="false" autocapitalizationType="none"></TextField>
+  <TextField hint="Password" secure="true"></TextField>
+  <Button text="Sign in"></Button>
+  <Button text="Sign up for Groceries"></Button>
+</StackLayout>
+
+
+<TextField>
+hint: Shows placeholder text that tells the user what to type.
+keyboardType: The type of keyboard to present to the user for input. keyboardType="email" shows a keyboard optimized for entering email addresses. 
+autocorrect: A boolean attribute that determines whether the mobile operating system should autocorrect user input. In the case of email address text fields, the autocorrect behavior is undesirable.
+autocapitalizationType: Determines how the operating system should autocapitalize user input. autocapitalizationType="none" turns autocapitalization off altogether. NativeScript supports four autocapitalization types on text fields.
+secure: A boolean attribute that determines whether the text field’s text should be masked, which is commonly done on password fields.
+<Button>
+text: Controls the text displayed within the button.
+
+Next, let’s focus on the other new UI component in the above example—<StackLayout>—and discuss how to organize your UI components in NativeScript apps.
+
+Because NativeScript does not use a browser to render UI components, web layout concepts like display: block and display: inline do not work in NativeScript apps.
+Instead, NativeScript provides several different layout UI components that allow you to position your components using native Android and iOS layout mechanisms. Although there are several layout containers in NativeScript, there are three you’ll primarily use.
+
+The <StackLayout> lets you stack child UI elements either vertically or horizontally.
+The <GridLayout> lets you divide your interface into a series of rows and columns, much like a <table> in HTML markup.
+The <FlexboxLayout> lets you arrange UI components using the syntax as display: flex on web.
+
+<ActionBar title="Groceries"></ActionBar>
+<FlexboxLayout>
+	<StackLayout>
+		<TextField hint="Email Address" keyboardType="email" autocorrect="false" autocapitalizationType="none"></TextField>
+		<TextField hint="Password" secure="true"></TextField>
+
+		<Button text="Sign in"></Button>
+    <Button text="Sign up for Groceries"></Button>
+  </StackLayout>
+</FlexboxLayout>
+
+The <StackLayout> is the simplest NativeScript layout, as all it does is stack user interface components—vertically by default, and horizontally if you give the component a orientation="horizontal" attribute.
+The other layout component in this example is the <FlexboxLayout> control. With a <FlexboxLayout> you have the ability to align components using the same flexbox syntax you would use to align <div> in a web app. Flexbox is commonly used for vertical centering, and that’s exactly what you’re going to use it for in this tutorial.
+
+
+Step 3. Styling your app using CSS
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "gr-login",
+  templateUrl: "login/login.component.html",
+  styleUrls: ["login/login.component.css"]
+})
+export class AppComponent {}
+
+login.component.css
+FlexboxLayout {
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+  background-image: url("~/images/background.jpg");
+}
+StackLayout {
+  width: 300;
+  padding: 10 16;
+  background-color: #f0f0f0;
+}
+
+Step 4. Using the NativeScript Core theme
+NativeScript’s styling infrastructure makes it possible to create and use CSS themes for your native applications, much like you would use a framework like Bootstrap on the web.
+The NativeScript project provides a core theme that you can add to any of your projects. The theme includes two color schemes, light and dark, as well as a series of convenience class names to help you build elegant user interfaces quickly.
+
+Open your app/app.css file and paste in the following code, which imports the NativeScript Core theme’s default stylesheet.
+
+@import "~nativescript-theme-core/css/core.light.css";
+
+ActionBar {
+  background-color: black;
+  color: white;
+}
+
+In NativeScript, the app.css is a global stylesheet. Any rules you apply in app.css apply to all components in your app.
+The <ActionBar> colors look a little odd on this page at the moment; don’t worry though, you’ll fix this display later in this tutorial. You can learn more about using the <ActionBar> component on its documentation page.
+
+Open your app/login/login.component.html file and replace its contents with the following code, which adds a new class attribute to several of the UI components.
+
+<ActionBar title="Groceries"></ActionBar>
+
+<FlexboxLayout>
+  <StackLayout class="form">
+    <TextField hint="Email Address" keyboardType="email"
+      autocorrect="false" autocapitalizationType="none"
+      class="input input-border"></TextField>
+    <TextField hint="Password" secure="true"
+      class="input input-border"></TextField>
+
+    <Button text="Sign in" class="btn btn-primary"></Button>
+    <Button text="Sign up for Groceries"></Button>
+  </StackLayout>
+</FlexboxLayout>
+
+c. Open your app/login/login.component.css file, and add the following CSS code under the existing selectors.
+
+Image {
+  margin-bottom: 20;
+  height: 70;
+}
+Button, TextField {
+  margin-bottom: 10;
+}
+.btn-primary {
+  background-color: #CB1D00;
+  margin-left: 0;
+  margin-right: 0;
+}
+TextField {
+  placeholder-color: #C4AFB4;
+  color: black;
+}
+
+The first thing to note here are the class names form, input, input-border, btn, and btn-primary. These are all class names from the NativeScript Core Theme, and each apply a set of CSS rules to help your UI components look good by default.
+
+Step 5. Working with images in your app
+In NativeScript you use the <Image> UI element and its src attribute to add images to your pages. The src attribute lets you specify your image in three ways. The first (and simplest) way is to point at the URL of an image:
+<Image src="https://www.nativescript.org/images/default-source/landingpages/logo.png"></Image>
+The second way is to point at an image that lives within your app's app folder. For example if you have an image at app/images/logo.png, you can use it with:
+<Image src="~/images/logo.png"></Image>
+The third way is to use platform-specific image resources, which you can learn more about on the NativeScript documentation. Let’s add a logo images to the Groceries app so you can see how this works.
+
+Open your app’s app/login/login.component.html file, and replace the component’s template with the following code, which adds a new <Image> component.
+<ActionBar title="Groceries"></ActionBar>
+
+<FlexboxLayout>
+  <StackLayout class="form">
+    <Image src="~/images/logo.png"></Image>
+
+    <TextField hint="Email Address" keyboardType="email"
+      autocorrect="false" autocapitalizationType="none"
+      class="input input-border"></TextField>
+    <TextField hint="Password" secure="true"
+      class="input input-border"></TextField>
+
+    <Button text="Sign in" class="btn btn-primary"></Button>
+    <Button text="Sign up for Groceries"></Button>
+  </StackLayout>
+</FlexboxLayout>
+
+
+Lesson 2. Adding Application Logic
+In this lesson you’ll learn how to add TypeScript logic to your app, how to create services that talk to backend endpoints, and how to architect an app to share code with Angular web apps.
+Step 6. Handling events
+Most user interfaces are driven by events. In NativeScript apps, those events are usually some user action, such as tapping, swiping, or rotating. NativeScript abstracts the iOS- and Android-specific code for handling such events into a handful of easy-to-use APIs. 
+Let’s start with the most common event you’ll use in a NativeScript app: tap.
+ Open your app/login/login.component.html file, find the existing sign in button within your component’s template 
+ (<Button text="Sign in" class="btn btn-primary"></Button>), 
+ and replace it with the following code.
+<Button text="Sign in" class="btn btn-primary" (tap)="submit()"></Button>
+b. Next, open your app/app.component.ts file, and replace the current AppComponent declaration (export class AppComponent {}) with the one shown below.
+
+export class AppComponent {
+  submit() {
+    console.log("hello");
+  }
+}
+
+
+Step 7. Binding to data
+Angular provides several ways to bind data in your TypeScript code to UI controls, and through the magic of NativeScript those same methods are available in your iOS and Android apps.
+
+The first of these is a way to bind UI attributes to properties defined in your TypeScript class. 
+In your app/app.component.ts file, replace the current AppComponent declaration with the one shown below, which adds a new email property, and changes the submit() method to display its value:
+
+export class AppComponent {
+  email = "nativescriptrocks@progress.com";
+  submit() {
+    alert("You’re using: " + this.email);
+  }
+}
+
+b. Next, open your app/login/login.component.html file, find the first <TextField>, and replace it with the code below, which adds a new text attribute.
+
+<TextField hint="Email Address" keyboardType="email"
+  autocorrect="false" autocapitalizationType="none"
+  [text]="email" class="input input-border"></TextField>
+
+  Next, let’s look at how to implement two-way binding in an Angular app.
+Open your app/login/login.component.html file, find the first <TextField>, and replace it with the <TextField> below, which introduces a new [(ngModel)] attribute:
+
+<TextField hint="Email Address" keyboardType="email"
+  autocorrect="false" autocapitalizationType="none"
+  [(ngModel)]="email" class="input input-border"></TextField>
+
+  b. Next, open your app/app.module.ts file, and replaces its contents with the code below, which adds a new NativeScriptFormsModule to the NgModule’s list of imports.
+
+import { NgModule } from "@angular/core";
+import { NativeScriptFormsModule } from "nativescript-angular/forms";
+import { NativeScriptModule } from "nativescript-angular/nativescript.module";
+
+import { AppComponent } from "./app.component";
+
+@NgModule({
+  imports: [
+    NativeScriptModule,
+    NativeScriptFormsModule
+  ],
+  declarations: [AppComponent],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+In the case of this example, [(ngModel)]="email" is shorthand for [text]="email" (textChange)="email=$event.object.text", which binds the email element’s text attribute to an email property and adds a change event handler that updates the email property’s value whenever the user makes a change.
+
+Before we move on, let’s make one additional change to show what else you can do with Angular’s data binding APIs. The Groceries app uses the same UI for the Sign In form and the Sign Up form. Therefore, when the user taps Sign Up, you need to update the text of the buttons (and eventually the functionality that occurs when you tap them). Let’s see how to make that happen.
+
+a. Open your app/login/login.component.html file and replace the two existing <Button>s with the code below.
+
+<Button [text]="isLoggingIn ? 'Sign in' : 'Sign up'"
+  class="btn btn-primary" (tap)="submit()"></Button>
+<Button [text]="isLoggingIn ? 'Sign up' : 'Back to login'"
+  (tap)="toggleDisplay()"></Button>
+b. Next, open your app/app.component.ts file, and replace the existing AppComponent declaration with the code below, which adds a new isLoggingIn property, and a new toggleDisplay() method:
+
+export class AppComponent {
+  email = "nativescriptrocks@progress.com";
+  isLoggingIn = true;
+
+  submit() {
+    alert("You’re using: " + this.email);
+  }
+
+  toggleDisplay() {
+    this.isLoggingIn = !this.isLoggingIn;
+  }
+}
+
+Step 8. Structuring your app
+There are many reasons to segment any application into modular units, and you can read about the various benefits on Wikipedia. Modularizing NativeScript has one additional, unique benefit: the ability to share the code you write between Angular-built web apps, and Angular-built native apps.
+
+Even if you have no plans to create an Angular web app, separating out your code is still advantageous for a number of other reasons—testability, ease of maintenance, and so forth—but if you do have plans to build an Angular web app, having a chunk of functionality that you can reuse in your native and web apps can be an invaluable time saver.
+
+a. Open your app/shared/user/user.model.ts file, and paste in the following code.
+
+export class User {
+  email: string;
+  password: string;
+}
+b. Next, open your app/app.component.ts file and add the following import at the top.
+
+import { User } from "./shared/user/user.model";
+With this line of code you import the User class that you just defined. Note the parallel between the export command used in the previous example and the import command used here. The reason the User class is available to import is because it was explicitly exported. You’ll see other examples of import and export as you go through this guide.
+
+c. While still in app/app.component.ts, replace the existing AppComponent definition with the one below, which uses the User class you just imported.
+export class AppComponent {
+  user: User;
+  isLoggingIn = true;
+  constructor() {
+    this.user = new User();
+  }
+  submit() {
+    alert("You’re using: " + this.user.email);
+  }
+
+  toggleDisplay() {
+    this.isLoggingIn = !this.isLoggingIn;
+  }
+}
+
+d. Your last step is to use this new model object in your template. To do that, open your app/login/login.component.html file, and replace the two existing <TextField>s with the code shown below, which updates the [(ngModel)] bindings to point at the new User object:
+
+<TextField hint="Email Address" keyboardType="email"
+  autocorrect="false" autocapitalizationType="none"
+  [(ngModel)]="user.email" class="input input-border"></TextField>
+<TextField hint="Password" secure="true"
+  [(ngModel)]="user.password" class="input input-border"></TextField>
+
+  With this setup you now have a User class that you can share across pages in your app and even across applications. But a model object that’s four lines of code isn’t all that exciting. Where this approach really pays off is when you’re able to share your business logic, and the code that hits your backend systems. In Angular those classes are known as services. Let’s look at them next.
+
+Step 9. Building services
+A login screen isn’t all that useful if it doesn’t actually log users into anything. Therefore, our next task is to allow users to create and log into accounts. We’ll build this functionality as an Angular service, which is Angular’s mechanism for reusable classes that operate on data.
+
+a. Open your app/shared/user/user.service.ts file and paste in the following code, which defines a simple register() method.
+
+import { Injectable } from "@angular/core";
+
+import { User } from "./user.model";
+
+@Injectable()
+export class UserService {
+  register(user: User) {
+    alert("About to register: " + user.email);
+  }
+}
+b. Next, add the following line to the top of your app/app.component.ts file, which imports the service you just defined.
+import { UserService } from "./shared/user/user.service";
+c. After that, in the same app.component.ts file, add a new providers property to the existing @Component decorator. The full @Component declaration should now look like this.
+
+@Component({
+  selector: "gr-login",
+  providers: [UserService],
+  styleUrls: ["login/login.component.css"],
+  templateUrl: "login/login.component.html"
+})
+The providers array is a simple list of all the Angular services that you need to use in your component. 
+At the moment you only have one service, so your providers array only has one entry.
+d. Next, replace AppComponent’s existing constructor with the code below, which adds the new UserService as a parameter. (We’ll discuss exactly what’s going on here in a moment.)
+
+constructor(private userService: UserService) {
+  this.user = new User();
+}
+e. After that, remove the existing submit() method in your AppComponent class. (You’ll add a new one in the next step.)
+
+f. Finally, add the the following three methods to your AppComponent class.
+
+
+submit() {
+  if (this.isLoggingIn) {
+    this.login();
+  } else {
+    this.signUp();
+  }
+}
+
+login() {
+  // TODO: Define
+}
+
+signUp() {
+  this.userService.register(this.user);
+}
+
+Before we move on, let’s return to this bit of code.
+
+
+constructor(private userService: UserService) {
+  this.user = new User();
+}
+This is Angular’s dependency injection implementation in action. Because you registered UserService as a provider in this component’s providers array, when Angular sees this syntax it creates an instance of the UserService class, and passes that instance into the component’s constructor.
+
+
+Let’s return to our example and make the registration process actually work.
+
+ACTION
+a. Open your app/shared/user/user.service.ts file and replaces its contents with the following code, which we’ll discuss in detail in a moment.
+
+import { Injectable } from "@angular/core";
+import { Http, Headers, Response } from "@angular/http";
+import { Observable } from "rxjs";
+import { catchError, map, tap } from "rxjs/operators";
+
+import { User } from "./user.model";
+import { Config } from "../config";
+
+@Injectable()
+export class UserService {
+    constructor(private http: Http) { }
+
+    register(user: User) {
+        return this.http.post(
+            Config.apiUrl + "user/" + Config.appKey,
+            JSON.stringify({
+                username: user.email,
+                email: user.email,
+                password: user.password
+            }),
+            { headers: this.getCommonHeaders() }
+        ).pipe(
+            catchError(this.handleErrors)
+        );
+    }
+
+    getCommonHeaders() {
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("Authorization", Config.authHeader);
+        return headers;
+    }
+
+    handleErrors(error: Response) {
+        console.log(JSON.stringify(error.json()));
+        return Observable.throw(error);
+    }
+}
+b. Next, open your app/app.component.ts file, and replace the existing signUp() function with the following code.
+
+signUp() {
+  this.userService.register(this.user)
+    .subscribe(
+      () => {
+        alert("Your account was successfully created.");
+        this.toggleDisplay();
+      },
+      () => alert("Unfortunately we were unable to create your account.")
+    );
+}
+
+The first thing to note here is the new constructor code in user.service.ts.
+
+
+constructor(private http: Http) {}
+The UserService class is using the same dependency injection technique to bring in a service that it needs, in this case the Http class, which is Angular’s way of letting you perform HTTP calls. And thanks to NativeScript, those same HTTP APIs work on iOS and Android without any extra work.
+he other new bit of code is the return value of this new register() method. register() returns this.http.post(), which is an RxJS Observable.
+
+The two functions you pass subscribe() are success and failure handlers. If the call to register() succeeds, your first alert will fire, and if the call to register() fails, your second alert will fire. Now that your service code is set up and ready to go, let’s make the final few changes and create an account.
+
+he () => {} syntax defines an ES2015 arrow function, which TypeScript supports out of the box. In this example, the arrow functions are the equivalent of writing function() {}. Arrow functions have the advantage of inheriting their context—aka this—from their parents. Note how the code above is able to call this.toggleDisplay() from an inner function, which would not work with a generic JavaScript function() {}.
+
+Because the UserService makes use of the Http service, your final step is registering the Http provider, much like you did with UserService. Although you could do this in your app.component.ts file, this time you’re going to take a slightly different approach.
+
+a. Open your app/app.module.ts file and replace its contents with the following code, which adds a new NativeScriptHttpModule to the list of imports.
+import { NgModule } from "@angular/core";
+import { NativeScriptFormsModule } from "nativescript-angular/forms";
+import { NativeScriptHttpModule } from "nativescript-angular/http";
+import { NativeScriptModule } from "nativescript-angular/nativescript.module";
+
+import { AppComponent } from "./app.component";
+
+@NgModule({
+  imports: [
+    NativeScriptModule,
+    NativeScriptFormsModule,
+    NativeScriptHttpModule
+  ],
+  declarations: [AppComponent],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+NativeScriptHttpModule is a NativeScript wrapper of Angular’s HttpModule, a module that declares all of Angular’s HTTP-based services—including the Http service that UserService uses.
+
+Step 10. Add navigation with routing
+Most of the Angular concepts you’ve used in the last few sections are the same regardless of whether you’re building for the web or native apps. You are even able to share model objects and services directly between the two environments.
+
+Routing is similar, but there are some differences. Routing on the web revolves around the concept of a URL, but in a native app there is no browser. Likewise, native apps have concepts that aren’t present in the browser, such as Android’s hardware back button, or iOS’s swipe left-to-right gesture to go back.
+
+Let’s look at how NativeScript handles this by implementing routing in Groceries.
+To this point you’ve been putting your login page code in app.component.ts. Let’s move that logic into the login folder to make room for additional pages.
+
+a. Open your app/app.component.ts file, and copy its contents into your app/login/login.component.ts file.
+
+b. Next, in your new app/login/login.component.ts file, change the name of the class from AppComponent to LoginComponent.
+
+c. After that, in the same file, update the two broken User and UserService imports to use the code below.
+
+
+import { User } from "../shared/user/user.model";
+import { UserService } from "../shared/user/user.service";
+d. Next, open your app/app.routing.ts file and paste in the following code.
+
+import { LoginComponent } from "./login/login.component";
+
+export const routes = [
+  { path: "", component: LoginComponent }
+];
+
+export const navigatableComponents = [
+  LoginComponent
+];
+The app/app.routing.ts file is where you declare a list of all your app’s routes. Right now your routes array has a single route for the login page, but you’ll add more momentarily. To get this app running you need to make two more changes.
+
+e. Open your app/app.module.ts file, and replace the file’s contents with the following code, which adds a new NativeScriptRouterModule import, as well as imports the routes you just declared in app.routing.ts.
+
+import { NgModule } from "@angular/core";
+import { NativeScriptFormsModule } from "nativescript-angular/forms";
+import { NativeScriptHttpModule } from "nativescript-angular/http";
+import { NativeScriptModule } from "nativescript-angular/nativescript.module";
+import { NativeScriptRouterModule } from "nativescript-angular/router";
+
+import { AppComponent } from "./app.component";
+import { routes, navigatableComponents } from "./app.routing";
+
+@NgModule({
+  imports: [
+    NativeScriptModule,
+    NativeScriptFormsModule,
+    NativeScriptHttpModule,
+    NativeScriptRouterModule,
+    NativeScriptRouterModule.forRoot(routes)
+  ],
+  declarations: [
+    AppComponent,
+    ...navigatableComponents
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+An NgModule’s declarations array expects a list of the components that you’ll be using in your app. In this case you’re adding the navigatableComponents array you exported in your app.routing.ts file to the AppComponent declaration you already had. The ... operator is ES2015 spread syntax, and it’s easiest to explain what it does with a quick example. If you declare a variable x as let x = [2, 3], then JavaScript will interpret [1, ...x] as [1, 2, 3].
+
+f. After that, open your app/app.component.ts file back up and paste in the following code. We’ll discuss this file in detail momentarily.
+
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "gr-app",
+  template: "<page-router-outlet></page-router-outlet>"
+})
+export class AppComponent {}
+g. And finally, open your app/main.ts file, and replace its contents with the following code, which removes the createFrameOnBootstrap option, as it’s no longer necessary now that you have routing in place.
+
+import { platformNativeScriptDynamic } from "nativescript-angular/platform";
+import { enableProdMode } from "@angular/core";
+
+import { AppModule } from "./app.module";
+
+enableProdMode();
+platformNativeScriptDynamic().bootstrapModule(AppModule);
