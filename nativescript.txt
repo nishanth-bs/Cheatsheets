@@ -510,3 +510,137 @@ import { AppModule } from "./app.module";
 
 enableProdMode();
 platformNativeScriptDynamic().bootstrapModule(AppModule)
+
+You’ve now successfully added a router, but you haven’t gotten to see it action as your app still only has one route. Let’s add a new route to Groceries to try this out.
+
+ACTION
+a. Open your app/list/list.component.ts file and paste in the following code, which you’ll use as the start of a simple list page.
+
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "gr-list",
+  templateUrl: "list/list.component.html",
+  styleUrls: ["list/list.component.css"]
+})
+export class ListComponent {}
+b. For now, we’ll keep the list page simple so you can see how the routing works. But so that there’s something to see, open your app/list/list.component.html file and paste in the following <Label>.
+
+<ActionBar title="Groceries"></ActionBar>
+<Label text="Hello world"></Label>
+c. After that, go back to your app/app.routing.ts file, and update the file with the following code.
+
+import { LoginComponent } from "./login/login.component";
+import { ListComponent } from "./list/list.component";
+
+export const routes = [
+  { path: "", component: LoginComponent },
+  { path: "list", component: ListComponent }
+];
+
+export const navigatableComponents = [
+  LoginComponent,
+  ListComponent
+];
+
+Angular now knows about the list page, but we still need to navigate the user to that page at the appropriate time. Your last task for this lesson is to allow users to log into their accounts, and then to navigate them to the new list page after they have successfully authenticated.
+
+ACTION
+a. Open your app/shared/user/user.service.ts file, and add the login() function below to the existing UserService class.
+
+login(user: User) {
+    return this.http.post(
+        Config.apiUrl + "user/" + Config.appKey + "/login",
+        JSON.stringify({
+            username: user.email,
+            password: user.password
+        }),
+        { headers: this.getCommonHeaders() }
+    ).pipe(
+        map(response => response.json()),
+        tap(data => {
+            Config.token = data._kmd.authtoken
+        }),
+        catchError(this.handleErrors)
+    );
+}
+This code hits one of this tutorial’s existing backend endpoints, and stores off an authentication token that you’ll use later in this guide.
+
+b. To use your service’s new login() function, return to your app/login/login.component.ts file, and add the following import to the top of the file:
+
+import { Router } from "@angular/router";
+c. Next, replace the current constructor() declaration with the code below, which injects Angular’s Router service.
+
+constructor(private router: Router, private userService: UserService) {
+d. Finally, replace the LoginComponent’s existing login() function with the code below, which calls your service’s new login() method, and calls the router’s navigate() method if login() completes successfully.
+
+login() {
+  this.userService.login(this.user)
+    .subscribe(
+      () => this.router.navigate(["/list"]),
+      (error) => alert("Unfortunately we could not find your account.")
+    );
+}
+
+Step 11. Customizing UI components
+So far, you’ve only used NativeScript UI elements by including them in an Angular component’s template, but you can also programatically create and access UI elements, and each UI component has a set of properties and methods you can use to customize your app.
+
+In the next example you’re going to hide the <ActionBar> on the login page, but before doing that there are two pieces of background knowledge you need to know.
+
+First, in NativeScript a single <Page> UI element wraps the template of every page-level Angular component. You don’t see this component, but it’s there, and it’s a UI component you can customize.
+
+Second, on Android an <ActionBar> shows in your app even if you don’t explicitly include an <ActionBar> in your template. (The title defaults to the name of your app.) To truly hide the <ActionBar> you have to set a property of the <Page> component, and that’s exactly what you’re going to do in this next example.
+
+ACTION
+a. Open your app/login/login.component.ts file, and add the following import to the top, which adds a reference to the Page class from the NativeScript core modules.
+
+import { Page } from "tns-core-modules/ui/page";
+b. Next, alter the same file’s existing "@angular/core" import to include the OnInit interface.
+
+import { Component, OnInit } from "@angular/core";
+c. OnInit is a TypeScript class interface. To see how it works, make the following change to the declaration of your LoginComponent class.
+
+export class LoginComponent implements OnInit {
+After you add the new implements keyword, you should see an error in Playground that says something like “Class ‘LoginComponent’ incorrectly implements interface ‘OnInit’”. When you implement a TypeScript class interface, you’re telling the TypeScript compiler that you must implement all methods that the interface requires. In the case of OnInit, Angular requires you to implement a single ngOnInit() method.
+
+d. To implement it, add the following method to your LoginComponent class.
+
+ngOnInit() {
+  this.page.actionBarHidden = true;
+}
+
+ngOnInit is one of several component lifecycle hooks that Angular provides. As its name implies, ngOnInit gets invoked when Angular initializes this component.
+
+e. We’ll discuss what the code within ngOnInit() does momentarily, but next, to make these changes compile and run, change the LoginComponent’s existing constructor() declaration to use the code below.
+
+constructor(private router: Router, private userService: UserService, private page: Page) {
+
+Because the Page class is so commonly used in NativeScript apps, NativeScript provides this syntax as a shorthand for getting access to a component’s page. You’ll see other methods of getting access to UI components to change their properties later in this guide.
+
+When your app refreshes the bar that previously appeared at the top of the screen on Android should now be hidden.
+Now that you have this code in place, let’s discuss what happens on this line:
+
+
+this.page.actionBarHidden = true;
+This code uses an instance of the Page class from the NativeScript page module, and sets its actionBarHidden property to true, which hides the ActionBar that shows by default on Android devices.
+
+Although you can peruse the NativeScript API documentation for a full list of these properties and what they do, if you’re using a TypeScript-friendly IDE, you can get a full list of these properties at any point. You can see this behavior in NativeScript Playground as you type this.page. while editing your login.component.ts file.
+
+Let’s make one last change to complete your login page, and this time we’ll use some new Angular syntax.
+
+ACTION
+a. Open your app/login/login.component.html file and change the opening <StackLayout> tag to use the following code.
+
+<StackLayout class="form" [class.dark]="!isLoggingIn">
+b. Next, open your app/login/login.component.css file and add the following code to the bottom.
+
+.dark {
+  background-color: #301217;
+}
+.dark TextField {
+  color:  #C4AFB4;
+}
+
+The [class.className] syntax is a handy Angular feature that lets you conditionally apply class names based on a boolean condition. In this case, [class.dark]="!isLoggingIn tells Angular to apply the dark class name only when the component’s isLoggingIn flag is false.
+
+What’s even cooler is that the syntax works even if you need to apply additional CSS class names to the component. That is, when using the syntax class="form" [class.dark]="!isLoggingIn", Angular is smart enough to keep the form class name applied even as it toggles the dark class name. You might find this trick handy as you develop your NativeScript applications using Angular.
