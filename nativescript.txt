@@ -644,3 +644,66 @@ b. Next, open your app/login/login.component.css file and add the following code
 The [class.className] syntax is a handy Angular feature that lets you conditionally apply class names based on a boolean condition. In this case, [class.dark]="!isLoggingIn tells Angular to apply the dark class name only when the component’s isLoggingIn flag is false.
 
 What’s even cooler is that the syntax works even if you need to apply additional CSS class names to the component. That is, when using the syntax class="form" [class.dark]="!isLoggingIn", Angular is smart enough to keep the form class name applied even as it toggles the dark class name. You might find this trick handy as you develop your NativeScript applications using Angular.
+
+Step 12. Introducing NativeScript UI
+In addition to the NativeScript core user interface components, many of which you’ve used throughout this guide, NativeScript additionally provides a collection of free, professional components collectively known as NativeScript UI.
+
+NativeScript UI contains controls for building drawers, listviews, calendars, charts, forms, autocompletes, and more. In fact, the graph you saw back in lesson one of this tutorial was a NativeScript UI component. To show what NativeScript UI can do, let’s look at to use the suite’s listview control to start to add a grocery list to your app.
+
+ACTION
+a. Open your app’s app/list/list.component.html file and replace its contents with the following code:
+
+<ActionBar title="Groceries"></ActionBar>
+
+<GridLayout>
+  <RadListView [items]="groceryList">
+    <ng-template let-item="item">
+      <Label [text]="item.name" class="p-15"></Label>
+    </ng-template>
+  </RadListView>
+</GridLayout>
+b. Next, open your app/app.module.ts file, and add the following import to the top of the file.
+
+import { NativeScriptUIListViewModule } from "nativescript-ui-listview/angular";
+c. After that, in the same app/app.module.ts file, add the NativeScriptUIListViewModule class you just imported to the @NgModule’s imports array. The array should now look like this.
+
+imports: [
+  NativeScriptModule,
+  NativeScriptFormsModule,
+  NativeScriptHttpModule,
+  NativeScriptRouterModule,
+  NativeScriptRouterModule.forRoot(routes),
+  NativeScriptUIListViewModule
+],
+d. Finally, open your app/list/list.component.ts file and replace its contents with the code below:
+
+import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+
+@Component({
+  selector: "gr-list",
+  templateUrl: "list/list.component.html",
+  styleUrls: ["list/list.component.css"]
+})
+export class ListComponent implements OnInit {
+  groceryList: Array<Object> = [];
+
+  ngOnInit() {
+    this.groceryList.push({ name: "Apples" });
+    this.groceryList.push({ name: "Bananas" });
+    this.groceryList.push({ name: "Oranges" });
+  }
+}
+e. Save your files. When your app refreshes on your device, navigate to the list page and you should see a hardcoded grocery list.
+Let’s break down what’s happening in the example above. First, your ListComponent class now has a groceryList property that you fill with three objects in an ngOnInit handler. This makes an array of hardcoded data available for your template to bind to.
+
+Let’s break down the template next.
+
+
+<RadListView [items]="groceryList">
+  <ng-template let-item="item">
+    <Label [text]="item.name" class="p-15"></Label>
+  </ng-template>
+</RadListView>
+The <RadListView> pro UI element requires an items property that points to an array of data—in this case, the groceryList array you added to your ListComponent class. The list view element requires a child <ng-template> element that specifies how to render each item in the items array.
+
+The let-* syntax is Angular’s way of creating template variables within loops. You can think of the syntax working like TypeScript’s  let keyword. This gives you the ability to refer to each item in the array as item within the template. For this template, you render each item in the array with a single <Label> UI element, and because of the [text]="item.name" binding, those labels contain the text from the name property of each of the items in groceryList TypeScript array.
