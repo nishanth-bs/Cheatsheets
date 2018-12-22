@@ -707,3 +707,363 @@ Let’s break down the template next.
 The <RadListView> pro UI element requires an items property that points to an array of data—in this case, the groceryList array you added to your ListComponent class. The list view element requires a child <ng-template> element that specifies how to render each item in the items array.
 
 The let-* syntax is Angular’s way of creating template variables within loops. You can think of the syntax working like TypeScript’s  let keyword. This gives you the ability to refer to each item in the array as item within the template. For this template, you render each item in the array with a single <Label> UI element, and because of the [text]="item.name" binding, those labels contain the text from the name property of each of the items in groceryList TypeScript array.
+
+Now that you have a hardcoded list of groceries displaying, let’s see how to swap that out with live data from a backend.
+
+ACTION
+a. Open your app/shared/grocery/grocery.model.ts and paste in the following code, which creates a simple Grocery model object that you can use throughout your app.
+
+export class Grocery {
+  constructor(public id: string, public name: string) {}
+}
+b. Next, let’s create a simple service that reads grocery lists from our backend. Open your app/shared/grocery/grocery.service.ts file and paste in the following code.
+
+import { Injectable } from "@angular/core";
+import { Http, Headers, Response, URLSearchParams } from "@angular/http";
+import { Observable } from "rxjs";
+import { catchError, map, tap } from "rxjs/operators";
+
+import { Config } from "../config";
+import { Grocery } from "./grocery.model";
+
+@Injectable()
+export class GroceryService {
+    baseUrl = Config.apiUrl + "appdata/" + Config.appKey + "/Groceries";
+
+    constructor(private http: Http) { }
+
+    load() {
+        // Kinvey-specific syntax to sort the groceries by last modified time. Don’t worry about the details here.
+        let params = new URLSearchParams();
+        params.append("sort", "{\"_kmd.lmt\": 1}");
+
+        return this.http.get(this.baseUrl, {
+            headers: this.getCommonHeaders(),
+            params: params
+        }).pipe(
+            map(res => res.json()),
+            map(data => {
+                let groceryList = [];
+                data.forEach((grocery) => {
+                    groceryList.push(new Grocery(grocery._id, grocery.Name));
+                });
+                return groceryList;
+            }),
+            catchError(this.handleErrors)
+        );
+    }
+
+    getCommonHeaders() {
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("Authorization", "Kinvey " + Config.token);
+        return headers;
+    }
+
+    handleErrors(error: Response) {
+        console.log(JSON.stringify(error.json()));
+        return Observable.throw(error);
+    }
+}
+The code here is very similar to the code you used in the UserService earlier in this guide. You use the Http service’s get() method to load JSON data, and RxJS’s map() function to format the data into an array of Grocery objects.
+
+c. To use this service, open your app/list/list.component.ts file and add the following two lines to the top of the file:
+
+import { Grocery } from "../shared/grocery/grocery.model";
+import { GroceryService } from "../shared/grocery/grocery.service";
+d. Next, in the same list.component.ts file, change the existing groceryList declaration to use the newly imported Grocery class instead of a generic Object.
+
+groceryList: Array<Grocery> = [];
+e. After that, add the following constructor function within the ListComponent class.
+
+constructor(private groceryService: GroceryService) {}
+f. Because the previous line of code injects service into your constructor, you must also include it as a provider within your component decorator. To do so, replace the existing @Component decorator with the code below:
+
+@Component({
+  selector: "gr-list",
+  templateUrl: "list/list.component.html",
+  styleUrls: ["list/list.component.css"],
+  providers: [GroceryService]
+})
+g. Finally, to kick off the call to your new service’s load() method, replace the ListComponent’s existing ngOnInit() method with the code below.
+
+ngOnInit() {
+  this.groceryService.load()
+    .subscribe(loadedGroceries => {
+      loadedGroceries.forEach((groceryObject) => {
+        this.groceryList.unshift(groceryObject);
+      });
+    });
+}
+In case you got lost during this section, your full list.component.ts file should now look like this.
+
+
+import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+
+import { Grocery } from "../shared/grocery/grocery.model";
+import { GroceryService } from "../shared/grocery/grocery.service";
+
+@Component({
+  selector: "gr-list",
+  templateUrl: "list/list.component.html",
+  styleUrls: ["list/list.component.css"],
+  providers: [GroceryService]
+})
+export class ListComponent implements OnInit {
+  groceryList: Array<Grocery> = [];
+
+  constructor(private groceryService: GroceryService) {}
+
+  ngOnInit() {
+    this.groceryService.load()
+      .subscribe(loadedGroceries => {
+        loadedGroceries.forEach((groceryObject) => {
+          this.groceryList.unshift(groceryObject);
+        });
+      });
+  }
+}
+h. Save your files.
+When your app refreshes on your device you’ll see a blank list page, but you didn’t do anything wrong! Your app now reads grocery data from a backend, but you don’t have any groceries associated with your new account.
+
+Step 13. Using advanced layouts
+In order to allow users to add to their grocery lists, you need to add a few additional UI controls to the list page. While you could use a simple <StackLayout> to stack up the controls you need, let’s look at how to create a slightly more complex layout using the <GridLayout> element.
+a. Open your app/list/list.component.html file and replace its contents with the following code:
+
+<ActionBar title="Groceries"></ActionBar>
+
+<GridLayout rows="auto, *">
+
+  <GridLayout row="0" columns="*, auto" class="add-bar">
+    <TextField #groceryTextField hint="Enter a grocery item" col="0"></TextField>
+    <Image src="~/images/add.png" col="1"></Image>
+  </GridLayout>
+
+  <RadListView row="1" [items]="groceryList">
+    <ng-template let-item="item">
+      <Label [text]="item.name" class="p-15"></Label>
+    </ng-template>
+  </RadListView>
+
+</GridLayout>
+b. Next, open your app/list/list.component.css file and replace its contents with the following code.
+
+.add-bar {
+  background-color: #CB1D00;
+  padding: 5;
+}
+.add-bar Image {
+  height: 25;
+  vertical-align: center;
+  margin-left: 10;
+  margin-right: 10;
+}
+.add-bar TextField {
+  padding: 10;
+}
+Label {
+  background-color: white;
+  border-bottom-width: 1;
+  border-bottom-color: gray;
+}
+c. Save your files. When your app refreshes with these changes on your device you should see the following UI.
+
+
+Let’s break down how this layout works, starting with the outer structure of the markup.
+
+
+<GridLayout rows="auto, *">
+  <GridLayout row="0" class="add-bar">...</GridLayout>
+  <RadListView row="1">...</RadListView>
+</GridLayout>
+The outer grid layout’s rows attribute divides the screen into two rows, the first auto-sized according to its childrens' height, and the other sized to take up *, or the remaining height of the screen. You place UI elements into these rows using the zero-based row attribute. The inner grid layout is in the top row because of its row="0" attribute, and the list view is in the bottom row because of its row="1" attribute.
+
+Grid layouts can also divide the screen into columns, which is what the inner grid layout does.
+
+
+<GridLayout columns="*, auto" class="add-bar">
+  <TextField col="0"></TextField>
+  <Image col="1"></Image>
+</GridLayout>
+Here the columns attribute divides the top of the screen into two columns. The col="0" attribute puts the text field in the first column, and the col="1" attribute puts the “+” image in the last column. Grid layouts are the most commonly used NativeScript layout, so you may wish to take a minute to play around with the columns and rows attributes to figure out how they work.
+
+
+You can nest any of the NativeScript layouts—not just grid layouts.
+You can pass numbers, percentages, and a variety of other values to create more complex grid layouts. Refer to the grid layout docs for more information.
+Now that we have the UI ready, let’s make the add button work.
+
+ACTION
+a. Open your app/list/list.component.html and give the existing <TextField> a new [(ngModel)] attribute so that it looks like this:
+
+<TextField #groceryTextField [(ngModel)]="grocery" hint="Enter a grocery item" col="0"></TextField>
+b. Next, in the same file, add a new tap event binding to the image. The full <Image> should now look like this.
+
+<Image src="~/images/add.png" (tap)="add()" col="1"></Image>
+With these attributes in place, your next steps are to define a new  grocery property and add() method in your ListComponent class.
+
+c. To do that, open your app/list/list.component.ts file and add the following two properties to the ListComponent class (right below the existing groceryList property):
+
+grocery = "";
+@ViewChild("groceryTextField") groceryTextField: ElementRef;
+d. Next, add the following import to the top of the same list.component.ts file.
+
+import { TextField } from "tns-core-modules/ui/text-field";
+e. After that, add the following add() method to the existing ListComponent class:
+
+add() {
+  if (this.grocery.trim() === "") {
+    alert("Enter a grocery item");
+    return;
+  }
+
+  // Dismiss the keyboard
+  let textField = <TextField>this.groceryTextField.nativeElement;
+  textField.dismissSoftInput();
+
+  this.groceryService.add(this.grocery)
+    .subscribe(
+      groceryObject => {
+        this.groceryList.unshift(groceryObject);
+        this.grocery = "";
+      },
+      () => {
+        alert({
+          message: "An error occurred while adding an item to your list.",
+          okButtonText: "OK"
+        });
+        this.grocery = "";
+      }
+    )
+}
+In this function you first ensure the user didn’t submit without typing a grocery. If the user did type something, you dismiss the device’s keyboard with the TextField element’s dismissSoftInput() method, and then call a new add() method on the GroceryService.
+
+f. To finish this example you have to define that new add() method. To do so, open your app/shared/grocery/grocery.service.ts file and paste the following function into the GroceryService class.
+
+add(name: string) {
+    return this.http.post(
+        this.baseUrl,
+        JSON.stringify({ Name: name }),
+        { headers: this.getCommonHeaders() }
+    ).pipe(
+        map(res => res.json()),
+        map(data => {
+            return new Grocery(data._id, name);
+        }),
+        catchError(this.handleErrors)
+    );
+}
+g. Save your files. When your app refreshes on your device you can now add grocery items and see them immediately appear in your list—and, all of this is completely driven by a backend service. Pretty cool, huh?
+
+
+The add() code you used before should look familiar. You’re again using the Http service’s post() method to make an HTTP call to our backend, and then using RxJS’s map() function to convert the returned data into a Grocery object.
+
+You consume that object in the ListComponent’s add() method, which adds the grocery to the page’s list by calling this.groceryList.unshift(), and then empties that page’s text field by setting this.grocery equal to "".
+
+
+this.groceryService.add(this.grocery)
+  .subscribe(
+    groceryObject => {
+      this.groceryList.unshift(groceryObject);
+      this.grocery = "";
+    },
+    () => { ... }
+  );
+At this point you’ve come a long way. You have a functional login screen and now a backend-driven list that you can add to. Before you finish this tutorial you have a few more tasks though. Let’s start by allowing users to delete from the list, and then move on to add a loading indicator and some animations.
+
+tep 14. Customizing NativeScript UI components
+NativeScript UI is a set of professional user interface components that includes a full charting library. As such, there are a tons of functionality you can use to enhance your applications.
+
+In this step you’ll leverage one feature of the <RadListView> control, which you’ll use to allow users to delete groceries, and learn how to find out more about the NativeScript UI controls.
+ACTION
+a. Open your app/list/list.component.html file, and replace the entire <RadListView> component with the code you see below. Don’t worry about the details of what’s going on at the moment; we’ll break this down momentarily.
+
+<RadListView row="1" [items]="groceryList"
+  swipeActions="true" (itemSwipeProgressStarted)="onSwipeCellStarted($event)">
+
+  <ng-template let-item="item">
+    <Label [text]="item.name" class="p-15"></Label>
+  </ng-template>
+
+  <GridLayout *tkListItemSwipeTemplate columns="*, auto">
+    <StackLayout id="delete-view" col="1" (tap)="delete($event)" class="delete-view">
+      <Image src="~/images/delete.png"></Image>
+    </StackLayout>
+  </GridLayout>
+
+</RadListView>
+b. Next, in your app/list/list.component.css file, add the following CSS to the bottom of the file.
+
+.delete-view {
+  background-color: #CB1D00;
+  padding: 20;
+}
+.delete-view Image {
+  color: white;
+}
+c. After that, open your app/list/list.component.ts file and add the following new imports to the top.
+
+import { ListViewEventData, RadListView } from "nativescript-ui-listview";
+import { View } from "tns-core-modules/ui/core/view";
+d. With those imports in place, in the same app/list/list.component.ts file, add the following two methods to the ListComponent class.
+
+onSwipeCellStarted(args: ListViewEventData) {
+  var swipeLimits = args.data.swipeLimits;
+  var swipeView = args.object;
+  var rightItem = swipeView.getViewById<View>("delete-view");
+  swipeLimits.right = rightItem.getMeasuredWidth();
+  swipeLimits.left = 0;
+  swipeLimits.threshold = rightItem.getMeasuredWidth() / 2;
+}
+
+delete(args: ListViewEventData) {
+  let grocery = <Grocery>args.object.bindingContext;
+  this.groceryService.delete(grocery.id)
+    .subscribe(() => {
+      let index = this.groceryList.indexOf(grocery);
+      this.groceryList.splice(index, 1);
+    });
+}
+e. Finally, open your app/shared/grocery/grocery.service.ts and add the following method to the GroceryService class, which hits this tutorial’s backend endpoint to delete grocery items.
+
+delete(id: string) {
+    return this.http.delete(
+        this.baseUrl + "/" + id,
+        { headers: this.getCommonHeaders() }
+    ).pipe(
+        map(res => res.json()),
+        catchError (this.handleErrors)
+    );
+}
+f. Save your files. When your device updates with these changes, you should now be able to swipe on individual items on your list and tap a button to delete them.
+
+
+The NativeScript UI components have a ton of features that you can use to add powerful functionality to your applications. In the previous example you used the RadListView’s swipe action capability, which allows users to swipe on list items to perform actions.
+
+ DETAILS ON USING SWIPE ACTIONS
+To understand how this works, let’s start back with the opening <RadListView> tag from your markup.
+
+
+<RadListView row="1" [items]="groceryList" [class.visible]="listLoaded"
+  swipeActions="true" (itemSwipeProgressStarted)="onSwipeCellStarted($event)">
+Setting the swipeActions attribute to true is necessary to turn on the <RadListView>’s swipe behavior. From there, the control triggers a number of events you can subscribe to configure exactly what you want to happen during swipes.
+
+The only event you must subscribe to is the itemSwipeProgressStarted event, as you have to set a few values that control exactly how the swipe will work. With that in mind let’s look at your onSwipeCellStarted method and what it does.
+
+
+onSwipeCellStarted(args: ListViewEventData) {
+  var swipeLimits = args.data.swipeLimits;
+  var swipeView = args.object;
+  var rightItem = swipeView.getViewById<View>("delete-view");
+  swipeLimits.right = rightItem.getMeasuredWidth();
+  swipeLimits.left = 0;
+  swipeLimits.threshold = rightItem.getMeasuredWidth() / 2;
+}
+The key here are the three lines of code at the bottom that set right, left, and threshold values. These values control the distance the user should be able to swipe right, swipe left, and the offset beyond which the swiped item will dock open, respectively.
+
+In this example you’re saying the user should be able to swipe right for a distance that’s equal to the width of the delete button, that the user shouldn’t be able to swipe left, and that the user should be able to swipe half the width of the delete button before the button stays open.
+
+
+Another popular way to configure swipe functionality is to perform an action automatically on swipe, without requiring the user to explicitly tap a button. The <RadListView> control supports this approach, and you read more about it on the NativeScript UI documentation on the topic.
+
+Collapse
+Now that users can both add and delete groceries from a list, let’s finish up this tutorial by adding a little polish to this list page.
